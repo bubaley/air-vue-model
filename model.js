@@ -1,7 +1,17 @@
-module.exports = (function () {
-    const axios = window && window.axios ? window.axios : require('./axios')
-    const _ = window && window._ ? window._ : require('./lodash')
+let axios = null
+let _ = null
+try {
+    axios = window.axios
+} catch (e) {
+    axios = require('./axios')
+}
+try {
+    _ = window._
+} catch (e) {
+    _ = require('./lodash')
+}
 
+module.exports = function () {
     const self = {
         name: '',
         url: '',
@@ -158,6 +168,4 @@ module.exports = (function () {
     }
 
     return self
-
-})()
-
+}
