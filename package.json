@@ -1,0 +1,21 @@
+{
+  "name": "air-vue-model",
+  "version": "1.0.18",
+  "description": "",
+  "main": "model.js",
+  "files": [
+    "*.js"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "vue"
+  ],
+  "author": "bubaley",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "moment-timezone": "^0.5.32"
+  }
+}
