@@ -1,18 +1,5 @@
 module.exports = function () {
 
-    let axios = null
-    let _ = null
-    try {
-        axios = window.axios
-    } catch (e) {
-        axios = require('./axios')
-    }
-    try {
-        _ = window._
-    } catch (e) {
-        _ = require('./lodash')
-    }
-
     const self = {
         name: '',
         url: '',
@@ -41,7 +28,7 @@ module.exports = function () {
                 search: self.search
             }
             const newParams = Object.assign(defaultParams, params)
-            axios.get(`/${self.url}/`, {
+            window.axios.get(`/${self.url}/`, {
                 params: newParams
             }).then(response => {
                 const {total, page, last_page, results} = response.data
@@ -57,10 +44,10 @@ module.exports = function () {
     self.loadItem = (id) => {
         return new Promise((resolve, reject) => {
             if (id === 'new') {
-                self.item = _.cloneDeep(self.default)
+                self.item = window._.cloneDeep(self.default)
                 resolve()
             } else if (parseInt(id)) {
-                axios.get(`/${self.url}/${id}/`)
+                window.axios.get(`/${self.url}/${id}/`)
                     .then(response => {
                         self.item = response.data
                         resolve(response.data)
@@ -71,7 +58,7 @@ module.exports = function () {
 
     self.create = (data = null) => {
         return new Promise((resolve, reject) => {
-            axios.post(`/${self.url}/`, data || self.item)
+            window.axios.post(`/${self.url}/`, data || self.item)
                 .then(response => {
                     self.item = response.data
                     resolve(self.item)
@@ -84,7 +71,7 @@ module.exports = function () {
             data = data || self.item
             if (!data.id)
                 reject()
-            axios.put(`/${self.url}/${data.id}/`, data)
+            window.axios.put(`/${self.url}/${data.id}/`, data)
                 .then(response => {
                     self.item = response.data
                     resolve(response.data)
@@ -98,7 +85,7 @@ module.exports = function () {
                 id = self.item.id
             if (!id)
                 reject()
-            axios.delete(`/${self.url}/${id}/`)
+            window.axios.delete(`/${self.url}/${id}/`)
                 .then(() => {
                     resolve()
                 })
@@ -111,7 +98,7 @@ module.exports = function () {
         const url = id ? `/${self.url}/${id}/${action}/` : `/${self.url}/${action}/`
 
         return new Promise((resolve, reject) => {
-            axios({
+            window.axios({
                 method: method,
                 url: url,
                 data: method === 'post' ? data : null,
@@ -134,7 +121,7 @@ module.exports = function () {
     }
 
     self.setItemFromDefault = () => {
-        self.item = _.cloneDeep(self.default)
+        self.item = window._.cloneDeep(self.default)
     }
 
     self.findBy = (key, value) => {
