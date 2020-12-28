@@ -1,17 +1,18 @@
-let axios = null
-let _ = null
-try {
-    axios = window.axios
-} catch (e) {
-    axios = require('./axios')
-}
-try {
-    _ = window._
-} catch (e) {
-    _ = require('./lodash')
-}
-
 module.exports = function () {
+
+    let axios = null
+    let _ = null
+    try {
+        axios = window.axios
+    } catch (e) {
+        axios = require('./axios')
+    }
+    try {
+        _ = window._
+    } catch (e) {
+        _ = require('./lodash')
+    }
+
     const self = {
         name: '',
         url: '',
