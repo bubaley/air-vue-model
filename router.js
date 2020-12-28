@@ -39,6 +39,6 @@ module.exports = (Vue, VueRouter, routes, options = {}) => {
             resolve()
         })
     }
-
+    return router
 }
 
