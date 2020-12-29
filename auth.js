@@ -102,9 +102,7 @@ module.exports = (function () {
         return new Promise((resolve, reject) => {
             axios.post('/users/', data).then(response => {
                 self.user = response.data
-                self.login({
-                    credentials: data
-                }).then(tokens => {
+                self.login(data).then(tokens => {
                     resolve({
                         user: response.data,
                         tokens: tokens
