@@ -22,16 +22,16 @@ module.exports = (Vue, VueRouter, routes, options = {}) => {
         return new Promise(async (resolve, reject) => {
             const auth = Vue.prototype.$auth
             for (let value of to.matched) {
-
+                let fail = false
                 if (value.meta && value.meta.auth && auth)
                     if (!auth.user) {
                         await auth.me().catch(() => {
                             reject()
-                            break
+                            fail = true
                         })
                     }
 
-                if (value.meta.single) {
+                if (value.meta.single && !fail) {
                     const param = value.meta.param
                     const id = to.params[param]
                     if (id === 'new') {
