@@ -1,4 +1,18 @@
-** AIR-VUE-MODEL **
+**AIR-VUE-MODEL**
+
+# Table of Contents
+
+1. [Instalation](#instalation)
+2. [Model](#model)
+    1. [Simple usage](#simple-usage)
+    2. [Methods](#methods)
+        1. [loadList](#loadlistparams)
+        2. [loadItem](#loaditemid)  
+        3. [create](#createdata--null)
+        4. [destroy](#destroyid--null)
+        5. [getRoutes](#getroutes)
+    3. [Required fields](#required-fields)
+    4. [Optional fields](#optional-fields)
 
 # Instalation
 
@@ -8,7 +22,7 @@
 
 Add folder **models** in src. Add a file to the directory that will contain the model, for example **user**.
 
-### Simple usage
+## Simple usage
 
 `src/models/user.js`
 
@@ -28,9 +42,9 @@ import Vue from 'vue'
 Vue.prototype.$user = Vue.observable(require('./models/user'))
 ```
 
-### Methods
+## Methods
 
-#### loadList(params)
+### loadList(params)
 
 Sends a **GET** request to get the list and set it to **list**. You can pass query params to query by passing them as an
 object in the method call.
@@ -47,7 +61,7 @@ this.$user.loadList(params).then(result => {
 })
 ```
 
-#### loadItem(id)
+### loadItem(id)
 
 Sends a **GET** request to get an item, the value is set in the **item** field. If id is `"new"` then **item** will be
 set to the value from **default**.
@@ -62,7 +76,7 @@ this.$user.loadItem(id).then(result => {
 })
 ```
 
-#### create(data = null)
+### create(data = null)
 
 Sends a **POST** request to create an item. If **data** is not passed, then the value will be taken from **item**. The
 new value will be set to **item**.
@@ -79,7 +93,7 @@ this.$user.create(data).then(result => {
 })
 ```
 
-#### update(data = null)
+### update(data = null)
 
 Sends a **POST** request to update an item. If **data** is not passed, then the value will be taken from **item**. The
 updated value will be set to **item**.
@@ -97,7 +111,7 @@ this.$user.update(data).then(result => {
 })
 ```
 
-#### destroy(id = null)
+### destroy(id = null)
 
 Sends a **DELETE** method to delete an object. If **id** is not passed, it will be taken from **item**.
 
@@ -105,10 +119,10 @@ Sends a **DELETE** method to delete an object. If **id** is not passed, it will 
 this.$user.destroy(3)
 ```
 
-#### getRoutes()
+### getRoutes()
 
-Get routes from **item.routes**.
-**Required fields:**
+Get routes from **item.routes**. 
+## Required fields:
 
 - component
 - name
@@ -139,7 +153,7 @@ this.$router.push({
 })
 ```
 
-**Optional fields:**
+## Optional fields:
 
 - single
 
