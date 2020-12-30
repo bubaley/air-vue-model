@@ -141,15 +141,19 @@ module.exports = function () {
     self.getRoutes = () => {
         const routes = []
         self.routes.forEach(route => {
+            let {component, path, name, ...meta} = route
+            component = component.default || component
+            path = path || meta.single ? `${self.url}/:${self.name}Id` : self.url
+            name = self.name + name.charAt(0).toUpperCase() + name.slice(1)
+
+            meta.instance = self
+            meta.param = meta.single ? `${self.name}Id` : null
+
             routes.push({
-                component: route.component,
-                path: route.single ? `${self.url}/:${self.name}Id` : self.url,
-                name: self.name + route.name.charAt(0).toUpperCase() + route.name.slice(1),
-                meta: {
-                    single: route.single || false,
-                    instance: self,
-                    param: route.single ? `${self.name}Id` : null,
-                }
+                component,
+                path,
+                name,
+                meta
             })
         })
         return routes
