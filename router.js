@@ -1,5 +1,7 @@
 module.exports = (Vue, VueRouter, routes, options = {}) => {
     Vue.use(VueRouter)
+    let fail = next => next({name: 'login'})
+    fail = options.fail || fail
 
     const router = new VueRouter({
         mode: 'history',
@@ -12,20 +14,22 @@ module.exports = (Vue, VueRouter, routes, options = {}) => {
                 next()
             })
             .catch(() => {
-                next({name: 'login'})
+                fail(next)
             })
     })
 
     const loadItems = (to) => {
         return new Promise(async (resolve, reject) => {
             const auth = Vue.prototype.$auth
-            if (to.matched[0].meta.auth && auth)
-                if (!auth.user) {
-                    await auth.me().catch(() => {
-                        reject()
-                    })
-                }
             for (let value of to.matched) {
+
+                if (value.meta && value.meta.auth && auth)
+                    if (!auth.user) {
+                        await auth.me().catch(() => {
+                            reject()
+                        })
+                    }
+
                 if (value.meta.single) {
                     const param = value.meta.param
                     const id = to.params[param]
