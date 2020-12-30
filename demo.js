@@ -1,8 +1,4 @@
-const auth = {}
-
-auth.kek = 123
-auth.invite = () => {
-    return '123'
-}
-
-module.exports = auth
+module.exports = (function () {
+    const kek = {}
+    kek.kek = 1
+}())
