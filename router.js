@@ -27,6 +27,7 @@ module.exports = (Vue, VueRouter, routes, options = {}) => {
                     if (!auth.user) {
                         await auth.me().catch(() => {
                             reject()
+                            break
                         })
                     }
 
