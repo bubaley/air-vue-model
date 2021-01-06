@@ -79,6 +79,20 @@ module.exports = function () {
         })
     }
 
+    self.createOrUpdate = (data = null) => {
+        data = data || self.item
+        if (data.id)
+            return {
+                promise: self.update(data),
+                created: false
+            }
+        else
+            return {
+                promise: self.create(data),
+                created: true
+            }
+    }
+
     self.destroy = (id = null) => {
         return new Promise((resolve, reject) => {
             if (!id && self.item && self.item.id)
@@ -113,6 +127,11 @@ module.exports = function () {
         })
     }
 
+    self.sendPostSingle = (data, action, id) => self.send(data, action, id)
+    self.sendPost = (data, action) => self.send(data, action)
+    self.sendGetSingle = (params, action, id) => self.send(params, action, id, 'get')
+    self.sendGet = (params, action) => self.send(params, action, null, 'get')
+
     self.setPagination = (pagination) => {
         for (const el in pagination) {
             if (pagination.hasOwnProperty(el))
@@ -138,25 +157,33 @@ module.exports = function () {
             self.list.splice(index, 1)
     }
 
-    self.getRoutes = () => {
-        const routes = []
-        self.routes.forEach(route => {
-            let {component, path, name, ...meta} = route
+    self.getRoutes = routes => {
+        const result = []
+        if (!routes)
+            routes = self.routes
+        routes.forEach(route => {
+            let {component, path, name, model, redirect, children, ...meta} = route
+            model = model || self
             component = component.default || component
-            path = path || meta.single ? `${self.url}/:${self.name}Id` : self.url
-            name = self.name + name.charAt(0).toUpperCase() + name.slice(1)
-
-            meta.instance = self
+            redirect = redirect || undefined
+            path = path || meta.single ? `${model.url}/:${model.name}Id` : model.url
+            name = model.name + name.charAt(0).toUpperCase() + name.slice(1)
+            if (Array.isArray(children)) {
+                children = self.getRoutes(children)
+            } else
+                children = undefined
+            meta.model = model || self
             meta.param = meta.single ? `${self.name}Id` : null
-
-            routes.push({
+            result.push({
                 component,
                 path,
                 name,
+                redirect,
+                children,
                 meta
             })
         })
-        return routes
+        return result
     }
 
     return self
