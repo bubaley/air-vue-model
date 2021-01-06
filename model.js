@@ -167,7 +167,7 @@ module.exports = function () {
             component = component.default || component
             redirect = redirect || undefined
             path = path || meta.single ? `${model.url}/:${model.name}Id` : model.url
-            name = model.name + name.charAt(0).toUpperCase() + name.slice(1)
+            name = self.name + name.charAt(0).toUpperCase() + name.slice(1)
             if (Array.isArray(children)) {
                 children = self.getRoutes(children)
             } else
