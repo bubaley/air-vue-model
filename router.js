@@ -35,9 +35,9 @@ module.exports = (Vue, VueRouter, routes, options = {}) => {
                     const param = value.meta.param
                     const id = to.params[param]
                     if (id === 'new') {
-                        value.meta.instance.setItemFromDefault()
+                        value.meta.model.setItemFromDefault()
                     } else {
-                        await value.meta.instance.loadItem(id)
+                        await value.meta.model.loadItem(id)
                     }
                 }
             }

@@ -157,34 +157,37 @@ module.exports = function () {
             self.list.splice(index, 1)
     }
 
-    self.getRoutes = routes => {
-        const result = []
-        if (!routes)
-            routes = self.routes
+    const _getRoutes = (routes) => {
+        const newRoutes = []
         routes.forEach(route => {
-            let {component, path, name, model, redirect, children, ...meta} = route
+            let {component, path, name, model, redirect, children, single, ...meta} = route
+
             model = model || self
-            component = component.default || component
-            redirect = redirect || undefined
-            path = path || meta.single ? `${model.url}/:${model.name}Id` : model.url
-            name = self.name + name.charAt(0).toUpperCase() + name.slice(1)
-            if (Array.isArray(children)) {
-                children = self.getRoutes(children)
-            } else
-                children = undefined
-            meta.model = model || self
-            meta.param = meta.single ? `${self.name}Id` : null
-            result.push({
-                component,
+            meta.model = model
+            path = path || model.url
+            if (single) {
+                meta.param = `${model.name}Id`
+                path += `/:${meta.param}`
+            }
+
+            const newRoute = {
+                name: self.name + name.charAt(0).toUpperCase() + name.slice(1),
                 path,
-                name,
-                redirect,
-                children,
+                component: component.default || component,
                 meta
-            })
+            }
+
+            if (redirect)
+                newRoute.redirect = redirect
+            if (Array.isArray(children))
+                newRoute.children = _getRoutes(children)
+
+            newRoutes.push(newRoute)
         })
-        return result
+        return newRoutes
     }
+
+    self.getRoutes = () => _getRoutes(self.routes)
 
     return self
 }
