@@ -164,7 +164,8 @@ module.exports = function () {
 
             model = model || self
             meta.model = model
-            path = path || model.url
+            if (typeof path !== 'string')
+                path = model.url
             if (single) {
                 meta.param = `${model.name}Id`
                 path += `/:${meta.param}`
