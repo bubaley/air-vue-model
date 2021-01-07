@@ -1,4 +1,6 @@
 module.exports = (value, list, viewFunction = null) => {
+    if (!value)
+        return list
     if (!viewFunction)
         viewFunction = (val) => val.name
     const words = value.toLowerCase().split(' ')

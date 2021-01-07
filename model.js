@@ -9,7 +9,7 @@ module.exports = function () {
         default: {
             name: null
         },
-        search: '',
+        search: null,
         pagination: {
             page: 1,
             total: 0,
