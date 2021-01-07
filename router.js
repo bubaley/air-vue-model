@@ -9,7 +9,7 @@ module.exports = (Vue, VueRouter, routes, options = {}) => {
     })
 
     router.beforeEach((to, from, next) => {
-        loadItems(to)
+        loadItems(from, to)
             .then((r) => {
                 next()
             })
@@ -18,7 +18,7 @@ module.exports = (Vue, VueRouter, routes, options = {}) => {
             })
     })
 
-    const loadItems = (to) => {
+    const loadItems = (from, to) => {
         return new Promise(async (resolve, reject) => {
             const auth = Vue.prototype.$auth
             for (let value of to.matched) {
@@ -33,11 +33,14 @@ module.exports = (Vue, VueRouter, routes, options = {}) => {
 
                 if (value.meta.single && !fail) {
                     const param = value.meta.param
-                    const id = to.params[param]
-                    if (id === 'new') {
+                    const toId = to.params[param]
+                    const fromId = from.params[param]
+                    if (fromId === toId)
+                        continue
+                    if (toId === 'new') {
                         value.meta.model.setItemFromDefault()
                     } else {
-                        await value.meta.model.loadItem(id)
+                        await value.meta.model.loadItem(toId)
                     }
                 }
             }
