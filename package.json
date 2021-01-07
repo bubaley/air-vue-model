@@ -4,10 +4,11 @@
   "description": "",
   "main": "model.js",
   "files": [
-    "*.js"
+    "*.js",
+    "package.json"
   ],
   "scripts": {
-    "test": "node test.js"
+    "test": "node search.js"
   },
   "keywords": [
     "vue"
