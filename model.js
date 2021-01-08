@@ -79,7 +79,7 @@ module.exports = function () {
         })
     }
 
-    self.createOrUpdate = (data = null) => {
+    self.updateOrCreate = (data = null) => {
         data = data || self.item
         if (data.id)
             return {
