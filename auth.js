@@ -3,6 +3,12 @@ const axios = window && window.axios ? window.axios : require('./axios')
 const self = {}
 self.user = null
 self.actions = []
+self.urls = {
+    login: '/token/',
+    me: '/users/me/',
+    register: '/users/',
+    refresh: '/token/refresh/'
+}
 
 self.hasRight = (data) => {
     if (!self.user)
@@ -37,7 +43,7 @@ self.me = (needRefresh = true) => {
         let access = localStorage.getItem('access')
         if (access && access !== 'undefined') {
             axios.defaults.headers.common = {Authorization: 'Bearer ' + access}
-            axios.get('/users/me/')
+            axios.get(self.urls.me)
                 .then(response => {
                     self.user = response.data
                     resolve(response.data)
@@ -80,10 +86,9 @@ self.me = (needRefresh = true) => {
 }
 
 self.login = (data) => {
-    const url = '/token/';
 
     return new Promise((resolve, reject) => {
-        axios.post(url, data).then(response => {
+        axios.post(self.urls.login, data).then(response => {
             localStorage.setItem('access', response.data.access)
             localStorage.setItem('refresh', response.data.refresh)
             self.me(false).then((user) => {
@@ -100,7 +105,7 @@ self.login = (data) => {
 
 self.register = (data) => {
     return new Promise((resolve, reject) => {
-        axios.post('/users/', data).then(response => {
+        axios.post(self.urls.register, data).then(response => {
             self.user = response.data
             self.login(data).then(tokens => {
                 resolve({
@@ -118,7 +123,7 @@ self.refresh = () => {
     let refresh = localStorage.getItem('refresh')
     return new Promise((resolve, reject) => {
         if (refresh && refresh !== 'undefined') {
-            axios.post('/token/refresh/', {
+            axios.post(self.urls.refresh, {
                 refresh: refresh
             }).then(response => {
                 localStorage.setItem('access', response.data.access)
