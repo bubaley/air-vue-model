@@ -1,6 +1,6 @@
 module.exports = (Vue, VueRouter, routes, options = {}) => {
     Vue.use(VueRouter)
-    let fail = next => next({name: 'login'})
+    let fail = (next, to) => next({name: 'login'})
     fail = options.fail || fail
 
     const router = new VueRouter({
@@ -14,7 +14,7 @@ module.exports = (Vue, VueRouter, routes, options = {}) => {
                 next()
             })
             .catch(() => {
-                fail(next)
+                fail(next, to)
             })
     })
 
