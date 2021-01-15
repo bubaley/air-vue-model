@@ -1,6 +1,8 @@
 module.exports = (Vue, VueRouter, routes, options = {}) => {
     Vue.use(VueRouter)
-    let fail = (next, to) => next({name: 'login'})
+    let fail = (to, from, next) => {
+        window.location.href = `/login?path=${to.fullPath}`
+    }
     fail = options.fail || fail
 
     const router = new VueRouter({
@@ -14,7 +16,7 @@ module.exports = (Vue, VueRouter, routes, options = {}) => {
                 next()
             })
             .catch(() => {
-                fail(next, to)
+                fail(to, from, next)
             })
     })
 
