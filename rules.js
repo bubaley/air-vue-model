@@ -16,6 +16,10 @@ const rules = {
             return 'Неверная дата'
         return true
     },
+    password: (value) => {
+        const pattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!"#$%&'()*+,-.\/:;<=>?@\[\\\]^_`{|}~]{2,}$/;
+        return pattern.test(value) || 'Пароль должен содержать буквы и цифры';
+    },
     phone: (v) => v.length === 0 || (v.length === 12 && v.includes('+79')) || 'Номер введен некорректно',
     minLen: (p) => (v) => v.length >= p || `Минимальная длина ${p}`,
     // phone: v => v[4] === '9' || 'Некорректный номер телефона',
