@@ -130,8 +130,8 @@ module.exports = function () {
         })
     }
 
-    self.sendPostSingle = (action, id, data, headers) => self.send(action, id, data, headers)
-    self.sendPost = (action, data, headers) => self.send(action, null, data, headers)
+    self.sendPostSingle = (action, id, data, headers) => self.send(action, id, data, 'post', headers)
+    self.sendPost = (action, data, headers) => self.send(action, null, data, 'post', headers)
     self.sendGetSingle = (action, id, params, headers) => self.send(action, id, params, 'get', headers)
     self.sendGet = (action, params, headers) => self.send(action, null, params, 'get', headers)
 
