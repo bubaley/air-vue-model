@@ -109,7 +109,9 @@ module.exports = function () {
 
     self.send = (data, action, id = null, method = 'post') => {
 
-        const url = id ? `/${self.url}/${id}/${action}/` : `/${self.url}/${action}/`
+        const modelUrl = self.url ? `/${self.url}/` : '/'
+
+        const url = id ? `${modelUrl}${id}/${action}/` : `${modelUrl}${action}/`
 
         return new Promise((resolve, reject) => {
             window.axios({
