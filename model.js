@@ -131,9 +131,9 @@ module.exports = function () {
     }
 
     self.sendPostSingle = (action, id, data, headers) => self.send(action, id, data, headers)
-    self.sendPost = (action, data, headers) => self.send(action, data, headers)
+    self.sendPost = (action, data, headers) => self.send(action, null, data, headers)
     self.sendGetSingle = (action, id, params, headers) => self.send(action, id, params, 'get', headers)
-    self.sendGet = (action, params, headers) => self.send(action, params, null, 'get', headers)
+    self.sendGet = (action, params, headers) => self.send(action, null, params, 'get', headers)
 
     self.setPagination = (pagination) => {
         for (const el in pagination) {
