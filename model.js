@@ -107,7 +107,7 @@ module.exports = function () {
         })
     }
 
-    self.send = (data, action, id = null, method = 'post') => {
+    self.send = (action, id = null, data = {}, method = 'post', headers = {}) => {
 
         const modelUrl = self.url ? `/${self.url}/` : '/'
 
@@ -118,7 +118,8 @@ module.exports = function () {
                 method: method,
                 url: url,
                 data: method === 'post' ? data : null,
-                params: method === 'get' ? data : null
+                params: method === 'get' ? data : null,
+                headers: headers
             })
                 .then((response) => {
                     resolve(response.data)
@@ -129,10 +130,10 @@ module.exports = function () {
         })
     }
 
-    self.sendPostSingle = (data, action, id) => self.send(data, action, id)
-    self.sendPost = (data, action) => self.send(data, action)
-    self.sendGetSingle = (params, action, id) => self.send(params, action, id, 'get')
-    self.sendGet = (params, action) => self.send(params, action, null, 'get')
+    self.sendPostSingle = (action, id, data, headers) => self.send(action, id, data, headers)
+    self.sendPost = (action, data, headers) => self.send(action, data, headers)
+    self.sendGetSingle = (action, id, params, headers) => self.send(action, id, params, 'get', headers)
+    self.sendGet = (action, params, headers) => self.send(action, params, null, 'get', headers)
 
     self.setPagination = (pagination) => {
         for (const el in pagination) {
