@@ -1,4 +1,4 @@
-const m = require('m-timezone')
+const m = require('moment-timezone')
 m.updateLocale('ru', {
     calendar: {
         lastDay: '[вчера,] LT',
