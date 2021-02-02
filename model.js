@@ -16,8 +16,12 @@ module.exports = function () {
             page_size: 20,
             last_page: 1
         },
-        info: {},
-        configuration: {},
+        texts: {
+            list: null,
+            description: null,
+            item: null
+        },
+        configuration: {}
     }
 
     self.loadList = (params) => {
