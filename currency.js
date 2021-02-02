@@ -7,3 +7,5 @@ const currency = {
         return parseFloat(number.toFixed(precision))
     }
 }
+
+module.exports = currency
