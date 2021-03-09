@@ -50,7 +50,7 @@ module.exports = function () {
             if (id === 'new') {
                 self.item = window._.cloneDeep(self.default)
                 resolve()
-            } else if (parseInt(id)) {
+            } else if (id) {
                 window.axios.get(`/${self.url}/${id}/`)
                     .then(response => {
                         self.item = response.data
