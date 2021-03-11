@@ -24,114 +24,32 @@ module.exports = function () {
         configuration: {}
     }
 
-    self.loadList = (params) => {
-        return new Promise((resolve, reject) => {
-            let defaultParams = {
-                page: self.pagination.page,
-                page_size: self.pagination.page_size,
-                search: self.search
-            }
-            const newParams = Object.assign(defaultParams, params)
-            window.axios.get(`/${self.url}/`, {
-                params: newParams
-            }).then(response => {
-                const {total, page, last_page, results} = response.data
-                self.setPagination({total, page, last_page})
-                self.list = results
-                resolve(results)
-            }).catch(() => {
-                reject()
-            })
-        })
+    self.loadList = params => {
+        return self._loadList(params)
     }
 
-    self.loadItem = (id) => {
-        return new Promise((resolve, reject) => {
-            if (id === 'new') {
-                self.item = window._.cloneDeep(self.default)
-                resolve()
-            } else if (id) {
-                window.axios.get(`/${self.url}/${id}/`)
-                    .then(response => {
-                        self.item = response.data
-                        resolve(response.data)
-                    }).catch(error => reject(error))
-            } else reject()
-        })
+    self.loadItem = id => {
+        return self._loadItem(id)
     }
 
     self.create = (data = null) => {
-        return new Promise((resolve, reject) => {
-            window.axios.post(`/${self.url}/`, data || self.item)
-                .then(response => {
-                    self.item = response.data
-                    resolve(self.item)
-                }).catch(error => reject(error))
-        })
+        return self._create(data)
     }
 
     self.update = (data = null) => {
-        return new Promise((resolve, reject) => {
-            data = data || self.item
-            if (!data.id)
-                reject()
-            window.axios.put(`/${self.url}/${data.id}/`, data)
-                .then(response => {
-                    self.item = response.data
-                    resolve(response.data)
-                }).catch(error => reject(error))
-        })
+        return self._update(data)
     }
 
     self.updateOrCreate = (data = null) => {
-        data = data || self.item
-        if (data.id)
-            return {
-                promise: self.update(data),
-                created: false
-            }
-        else
-            return {
-                promise: self.create(data),
-                created: true
-            }
+        return self._updateOrCreate(data)
     }
 
     self.destroy = (id = null) => {
-        return new Promise((resolve, reject) => {
-            if (!id && self.item && self.item.id)
-                id = self.item.id
-            if (!id)
-                reject()
-            window.axios.delete(`/${self.url}/${id}/`)
-                .then(() => {
-                    resolve()
-                })
-                .catch(error => reject(error))
-        })
+        return self._destroy(id)
     }
 
     self.send = (action, id = null, data = {}, method = 'post', headers = {}) => {
-
-        const modelUrl = self.url ? `/${self.url}/` : '/'
-
-        const url = id ? `${modelUrl}${id}/${action}/` : `${modelUrl}${action}/`
-
-        return new Promise((resolve, reject) => {
-            window.axios({
-                method: method,
-                url: url,
-                data: method === 'post' ? data : null,
-                params: method === 'get' ? data : null,
-                headers: headers
-            })
-                .then((response) => {
-                    resolve(response.data)
-                })
-                .catch((error) => {
-                    reject(error)
-                })
-        })
+        return self._send(action, id, data, method, headers)
     }
 
     self.sendPostSingle = (action, id, data, headers) => self.send(action, id, data, 'post', headers)
@@ -197,6 +115,113 @@ module.exports = function () {
     }
 
     self.getRoutes = () => _getRoutes(self.routes)
+
+    self._loadItem = id => {
+        return new Promise((resolve, reject) => {
+            if (id === 'new') {
+                self.item = window._.cloneDeep(self.default)
+                resolve()
+            } else if (id) {
+                window.axios.get(`/${self.url}/${id}/`)
+                    .then(response => {
+                        self.item = response.data
+                        resolve(response.data)
+                    }).catch(error => reject(error.response))
+            } else reject()
+        })
+    }
+
+    self._loadList = params => {
+        return new Promise((resolve, reject) => {
+            let defaultParams = {
+                page: self.pagination.page,
+                page_size: self.pagination.page_size,
+                search: self.search
+            }
+            const newParams = Object.assign(defaultParams, params)
+            window.axios.get(`/${self.url}/`, {
+                params: newParams
+            }).then(response => {
+                const {total, page, last_page, results} = response.data
+                self.setPagination({total, page, last_page})
+                self.list = results
+                resolve(results)
+            }).catch(error => reject(error.response))
+        })
+    }
+
+    self._create = (data = null) => {
+        return new Promise((resolve, reject) => {
+            window.axios.post(`/${self.url}/`, data || self.item)
+                .then(response => {
+                    self.item = response.data
+                    resolve(self.item)
+                }).catch(error => reject(error.response))
+        })
+    }
+
+    self._update = (data = null) => {
+        return new Promise((resolve, reject) => {
+            data = data || self.item
+            if (!data.id)
+                reject()
+            window.axios.put(`/${self.url}/${data.id}/`, data)
+                .then(response => {
+                    self.item = response.data
+                    resolve(response.data)
+                }).catch(error => reject(error.response))
+        })
+    }
+
+    self._updateOrCreate = (data = null) => {
+        data = data || self.item
+        if (data.id)
+            return {
+                promise: self.update(data),
+                created: false
+            }
+        else
+            return {
+                promise: self.create(data),
+                created: true
+            }
+    }
+
+    self._destroy = (id = null) => {
+        return new Promise((resolve, reject) => {
+            if (!id && self.item && self.item.id)
+                id = self.item.id
+            if (!id)
+                reject()
+            window.axios.delete(`/${self.url}/${id}/`)
+                .then(() => {
+                    resolve()
+                })
+                .catch(error => reject(error.response))
+        })
+    }
+
+    self._send = (action, id = null, data = {}, method = 'post', headers = {}) => {
+        const modelUrl = self.url ? `/${self.url}/` : '/'
+
+        const url = id ? `${modelUrl}${id}/${action}/` : `${modelUrl}${action}/`
+
+        return new Promise((resolve, reject) => {
+            window.axios({
+                method: method,
+                url: url,
+                data: method === 'post' ? data : null,
+                params: method === 'get' ? data : null,
+                headers: headers
+            })
+                .then((response) => {
+                    resolve(response.data)
+                })
+                .catch((error) => {
+                    reject(error.response)
+                })
+        })
+    }
 
     return self
 }
