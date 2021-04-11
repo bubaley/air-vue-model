@@ -9,7 +9,10 @@ module.exports = function () {
         default: {
             name: null
         },
-        search: null,
+        filters: {
+            search: null,
+        },
+        filterBy: [],
         pagination: {
             page: 1,
             total: 0,
@@ -21,7 +24,6 @@ module.exports = function () {
             description: null,
             item: null
         },
-        configuration: {}
     }
 
     self.loadList = params => {
@@ -52,6 +54,10 @@ module.exports = function () {
         return self._send(action, id, data, method, headers)
     }
 
+    self.getFilters = () => {
+        return self._getFilters()
+    }
+
     self.sendPostSingle = (action, id, data, headers) => self.send(action, id, data, 'post', headers)
     self.sendPost = (action, data, headers) => self.send(action, null, data, 'post', headers)
     self.sendGetSingle = (action, id, params, headers) => self.send(action, id, params, 'get', headers)
@@ -64,22 +70,42 @@ module.exports = function () {
         }
     }
 
+    self.copy = item => {
+        item = item || self.item
+        return window._.cloneDeep(item)
+    }
+
     self.setItemFromDefault = () => {
-        self.item = window._.cloneDeep(self.default)
+        self.item = self.copy(self.default)
     }
 
-    self.findBy = (key, value) => {
-        return self.list.find(el => el[key] === value)
+    self.findBy = (key, value, list = null) => {
+        list = list || self.list
+        return list.find(el => el[key] === value)
     }
 
-    self.findById = (id) => {
-        return self.findBy('id', id)
+    self.findIndexBy = (key, value, list = null) => {
+        list = list || self.list
+        return list.findIndex(el => el[key] === value)
     }
 
-    self.deleteById = (id) => {
-        const index = self.list.findIndex(el => el.id === id)
+    self.deleteBy = (key, value, list = null) => {
+        list = list || self.list
+        const index = self.findIndexBy(key, value, list)
         if (index > -1)
-            self.list.splice(index, 1)
+            list.splice(index, 1)
+    }
+
+    self.findById = (id, list = null) => {
+        return self.findBy('id', id, list)
+    }
+
+    self.findIndexById = (id, list = null) => {
+        return self.findIndexBy('id', id, list)
+    }
+
+    self.deleteById = (id, list = null) => {
+        self.deleteBy('id', id, list)
     }
 
     const _getRoutes = (routes) => {
@@ -116,7 +142,7 @@ module.exports = function () {
 
     self.getRoutes = () => _getRoutes(self.routes)
 
-    self._loadItem = id => {
+    self._loadItem = (id, setToModel = true) => {
         return new Promise((resolve, reject) => {
             if (id === 'new') {
                 self.item = window._.cloneDeep(self.default)
@@ -124,28 +150,43 @@ module.exports = function () {
             } else if (id) {
                 window.axios.get(`/${self.url}/${id}/`)
                     .then(response => {
-                        self.item = response.data
+                        if (setToModel)
+                            self.item = response.data
                         resolve(response.data)
                     }).catch(error => reject(error.response))
             } else reject()
         })
     }
 
-    self._loadList = params => {
+    self._getFilters = () => {
+        const filters = {}
+        for (const [key, value] of Object.entries(self.filters)) {
+            if (value || value === 0) {
+                if (!self.filterBy.length || (self.filterBy.length && self.filterBy.indexOf(key) > -1))
+                    filters[key] = value
+            }
+        }
+        return filters
+    }
+
+    self._loadList = (params, setToModel = true) => {
         return new Promise((resolve, reject) => {
             let defaultParams = {
                 page: self.pagination.page,
-                page_size: self.pagination.page_size,
-                search: self.search
+                page_size: self.pagination.page_size
             }
-            const newParams = Object.assign(defaultParams, params)
+            const filters = self.getFilters()
+            const newParams = Object.assign(defaultParams, filters, params)
             window.axios.get(`/${self.url}/`, {
                 params: newParams
             }).then(response => {
-                const {total, page, last_page, results} = response.data
-                self.setPagination({total, page, last_page})
-                self.list = results
-                resolve(results)
+                if (setToModel) {
+                    const {total, page, last_page, results} = response.data
+                    self.setPagination({total, page, last_page})
+                    self.list = results
+                    resolve(results)
+                } else
+                    resolve(response.data)
             }).catch(error => reject(error.response))
         })
     }
@@ -201,15 +242,17 @@ module.exports = function () {
         })
     }
 
-    self._send = (action, id = null, data = {}, method = 'post', headers = {}) => {
-        const modelUrl = self.url ? `/${self.url}/` : '/'
-
-        const url = id ? `${modelUrl}${id}/${action}/` : `${modelUrl}${action}/`
+    self._send = (action = null, id = null, data = {}, method = 'post', headers = {}) => {
+        let currentUrl = self.url ? `/${self.url}/` : '/'
+        if (id)
+            currentUrl += `/${id}/`
+        if (action)
+            currentUrl += `/${action}/`
 
         return new Promise((resolve, reject) => {
             window.axios({
                 method: method,
-                url: url,
+                url: currentUrl,
                 data: method === 'post' ? data : null,
                 params: method === 'get' ? data : null,
                 headers: headers
