@@ -245,9 +245,9 @@ module.exports = function () {
     self._send = (action = null, id = null, data = {}, method = 'post', headers = {}) => {
         let currentUrl = self.url ? `/${self.url}/` : '/'
         if (id)
-            currentUrl += `/${id}/`
+            currentUrl += `${id}/`
         if (action)
-            currentUrl += `/${action}/`
+            currentUrl += `${action}/`
 
         return new Promise((resolve, reject) => {
             window.axios({
