@@ -14,9 +14,9 @@ module.exports = function () {
         },
         filterBy: [],
         pagination: {
-            page: 1,
+            _page: 1,
+            _page_size: 20,
             total: 0,
-            page_size: 20,
             last_page: 1
         },
         texts: {
@@ -63,11 +63,11 @@ module.exports = function () {
     self.sendGetSingle = (action, id, params, headers) => self.send(action, id, params, 'get', headers)
     self.sendGet = (action, params, headers) => self.send(action, null, params, 'get', headers)
 
-    self.setPagination = (pagination) => {
-        for (const el in pagination) {
-            if (pagination.hasOwnProperty(el))
-                self.pagination[el] = pagination[el]
-        }
+    self.setPagination = pagination => {
+        self.pagination._page = pagination.page || self.pagination._page
+        self.pagination._page_size = pagination.page_size || self.pagination._page_size
+        self.total = pagination.total || self.total
+        self.last_page = pagination.last_page || self.last_page
     }
 
     self.copy = item => {
@@ -265,6 +265,25 @@ module.exports = function () {
                 })
         })
     }
+
+    Object.defineProperty(self.pagination, 'page', {
+        get: () => {
+            return self.pagination._page
+        },
+        set: (val) => {
+            self.pagination._page = val
+            self.loadList()
+        }
+    })
+    Object.defineProperty(self.pagination, 'page_size', {
+        get: () => {
+            return self.pagination._page_size
+        },
+        set: (val) => {
+            self.pagination._page_size = val
+            self.loadList()
+        }
+    })
 
     return self
 }
