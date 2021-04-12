@@ -274,7 +274,9 @@ module.exports = function () {
         },
         set: (val) => {
             self.pagination._page = val
-            self.loadList()
+            self.loadList({}, {
+                setFirstPage: false
+            })
         }
     })
     Object.defineProperty(self.pagination, 'page_size', {
