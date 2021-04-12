@@ -26,12 +26,12 @@ module.exports = function () {
         },
     }
 
-    self.loadList = params => {
-        return self._loadList(params)
+    self.loadList = (params = {}, settings = {}) => {
+        return self._loadList(params, settings)
     }
 
-    self.loadItem = id => {
-        return self._loadItem(id)
+    self.loadItem = (id, settings = {}) => {
+        return self._loadItem(id, settings)
     }
 
     self.create = (data = null) => {
@@ -142,7 +142,7 @@ module.exports = function () {
 
     self.getRoutes = () => _getRoutes(self.routes)
 
-    self._loadItem = (id, setToModel = true) => {
+    self._loadItem = (id, settings = {}) => {
         return new Promise((resolve, reject) => {
             if (id === 'new') {
                 self.item = window._.cloneDeep(self.default)
@@ -150,7 +150,7 @@ module.exports = function () {
             } else if (id) {
                 window.axios.get(`/${self.url}/${id}/`)
                     .then(response => {
-                        if (setToModel)
+                        if (settings.setToModel)
                             self.item = response.data
                         resolve(response.data)
                     }).catch(error => reject(error.response))
@@ -169,8 +169,10 @@ module.exports = function () {
         return filters
     }
 
-    self._loadList = (params, setToModel = true) => {
+    self._loadList = (params = {}, settings = {}) => {
         return new Promise((resolve, reject) => {
+            if (settings.setFirstPage === false)
+                self.setPagination({page: 1})
             let defaultParams = {
                 page: self.pagination.page,
                 page_size: self.pagination.page_size
@@ -180,7 +182,7 @@ module.exports = function () {
             window.axios.get(`/${self.url}/`, {
                 params: newParams
             }).then(response => {
-                if (setToModel) {
+                if (settings.setToModel) {
                     const {total, page, last_page, results} = response.data
                     self.setPagination({total, page, last_page})
                     self.list = results
@@ -281,7 +283,9 @@ module.exports = function () {
         },
         set: (val) => {
             self.pagination._page_size = val
-            self.loadList()
+            self.loadList({}, {
+                setFirstPage: false
+            })
         }
     })
 
