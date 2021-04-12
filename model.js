@@ -161,7 +161,7 @@ module.exports = function () {
     self._getFilters = () => {
         const filters = {}
         for (const [key, value] of Object.entries(self.filters)) {
-            if (value || value === 0) {
+            if (value !== null) {
                 if (!self.filterBy.length || (self.filterBy.length && self.filterBy.indexOf(key) > -1))
                     filters[key] = value
             }
