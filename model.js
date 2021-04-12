@@ -171,7 +171,7 @@ module.exports = function () {
 
     self._loadList = (params = {}, settings = {}) => {
         return new Promise((resolve, reject) => {
-            if (settings.setFirstPage === false)
+            if (settings.setFirstPage !== false)
                 self.setPagination({page: 1})
             let defaultParams = {
                 page: self.pagination.page,
