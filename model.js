@@ -150,7 +150,7 @@ module.exports = function () {
             } else if (id) {
                 window.axios.get(`/${self.url}/${id}/`)
                     .then(response => {
-                        if (settings.setToModel)
+                        if (settings.setToModel !== false)
                             self.item = response.data
                         resolve(response.data)
                     }).catch(error => reject(error.response))
@@ -182,7 +182,7 @@ module.exports = function () {
             window.axios.get(`/${self.url}/`, {
                 params: newParams
             }).then(response => {
-                if (settings.setToModel) {
+                if (settings.setToModel !== false) {
                     const {total, page, last_page, results} = response.data
                     self.setPagination({total, page, last_page})
                     self.list = results
