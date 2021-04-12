@@ -66,8 +66,8 @@ module.exports = function () {
     self.setPagination = pagination => {
         self.pagination._page = pagination.page || self.pagination._page
         self.pagination._page_size = pagination.page_size || self.pagination._page_size
-        self.total = pagination.total || self.total
-        self.last_page = pagination.last_page || self.last_page
+        self.pagination.total = pagination.total || self.pagination.total
+        self.pagination.last_page = pagination.last_page || self.pagination.last_page
     }
 
     self.copy = item => {
