@@ -24,14 +24,15 @@ module.exports = function () {
             description: null,
             item: null
         },
+        pk: 'id'
     }
 
     self.loadList = (params = {}, settings = {}) => {
         return self._loadList(params, settings)
     }
 
-    self.loadItem = (id, settings = {}) => {
-        return self._loadItem(id, settings)
+    self.loadItem = (pk, settings = {}) => {
+        return self._loadItem(pk, settings)
     }
 
     self.create = (data = null) => {
@@ -50,17 +51,17 @@ module.exports = function () {
         return self._destroy(id)
     }
 
-    self.send = (action, id = null, data = {}, method = 'post', headers = {}) => {
-        return self._send(action, id, data, method, headers)
+    self.send = (action, pk = null, data = {}, method = 'post', headers = {}) => {
+        return self._send(action, pk, data, method, headers)
     }
 
     self.getFilters = () => {
         return self._getFilters()
     }
 
-    self.sendPostSingle = (action, id, data, headers) => self.send(action, id, data, 'post', headers)
+    self.sendPostSingle = (action, pk, data, headers) => self.send(action, pk, data, 'post', headers)
     self.sendPost = (action, data, headers) => self.send(action, null, data, 'post', headers)
-    self.sendGetSingle = (action, id, params, headers) => self.send(action, id, params, 'get', headers)
+    self.sendGetSingle = (action, pk, params, headers) => self.send(action, pk, params, 'get', headers)
     self.sendGet = (action, params, headers) => self.send(action, null, params, 'get', headers)
 
     self.setPagination = pagination => {
@@ -96,16 +97,16 @@ module.exports = function () {
             list.splice(index, 1)
     }
 
-    self.findById = (id, list = null) => {
-        return self.findBy('id', id, list)
+    self.findByPk = (pk, list = null) => {
+        return self.findBy(self.pk, pk, list)
     }
 
-    self.findIndexById = (id, list = null) => {
-        return self.findIndexBy('id', id, list)
+    self.findIndexByPk = (pk, list = null) => {
+        return self.findIndexBy(self.pk, pk, list)
     }
 
-    self.deleteById = (id, list = null) => {
-        self.deleteBy('id', id, list)
+    self.deleteByPk = (pk, list = null) => {
+        self.deleteBy(self.pk, pk, list)
     }
 
     const _getRoutes = (routes) => {
@@ -118,7 +119,7 @@ module.exports = function () {
             if (typeof path !== 'string')
                 path = model.url
             if (single) {
-                meta.param = `${model.name}Id`
+                meta.param = `${model.name}${self.pk.charAt(0).toUpperCase() + self.pk.slice(1)}`
                 meta.single = true
                 path += `/:${meta.param}`
             }
@@ -142,13 +143,13 @@ module.exports = function () {
 
     self.getRoutes = () => _getRoutes(self.routes)
 
-    self._loadItem = (id, settings = {}) => {
+    self._loadItem = (pk, settings = {}) => {
         return new Promise((resolve, reject) => {
-            if (id === 'new') {
+            if (pk === 'new') {
                 self.item = window._.cloneDeep(self.default)
                 resolve()
-            } else if (id) {
-                window.axios.get(`/${self.url}/${id}/`)
+            } else if (pk) {
+                window.axios.get(`/${self.url}/${pk}/`)
                     .then(response => {
                         if (settings.setToModel !== false)
                             self.item = response.data
@@ -206,9 +207,9 @@ module.exports = function () {
     self._update = (data = null) => {
         return new Promise((resolve, reject) => {
             data = data || self.item
-            if (!data.id)
+            if (!data[self.pk])
                 reject()
-            window.axios.put(`/${self.url}/${data.id}/`, data)
+            window.axios.put(`/${self.url}/${data[self.pk]}/`, data)
                 .then(response => {
                     self.item = response.data
                     resolve(response.data)
@@ -230,13 +231,13 @@ module.exports = function () {
             }
     }
 
-    self._destroy = (id = null) => {
+    self._destroy = (pk = null) => {
         return new Promise((resolve, reject) => {
-            if (!id && self.item && self.item.id)
-                id = self.item.id
-            if (!id)
+            if (!pk && self.item && self.item[self.pk])
+                pk = self.item[self.pk]
+            if (!pk)
                 reject()
-            window.axios.delete(`/${self.url}/${id}/`)
+            window.axios.delete(`/${self.url}/${pk}/`)
                 .then(() => {
                     resolve()
                 })
@@ -244,10 +245,10 @@ module.exports = function () {
         })
     }
 
-    self._send = (action = null, id = null, data = {}, method = 'post', headers = {}) => {
+    self._send = (action = null, pk = null, data = {}, method = 'post', headers = {}) => {
         let currentUrl = self.url ? `/${self.url}/` : '/'
-        if (id)
-            currentUrl += `${id}/`
+        if (pk)
+            currentUrl += `${pk}/`
         if (action)
             currentUrl += `${action}/`
 

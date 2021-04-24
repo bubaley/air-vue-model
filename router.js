@@ -35,14 +35,14 @@ module.exports = (Vue, VueRouter, routes, options = {}) => {
 
                 if (value.meta.single && !fail) {
                     const param = value.meta.param
-                    const toId = to.params[param]
-                    const fromId = from.params[param]
-                    if (fromId === toId)
+                    const toPk = to.params[param]
+                    const fromPk = from.params[param]
+                    if (fromPk === toPk)
                         continue
-                    if (toId === 'new') {
+                    if (toPk === 'new') {
                         value.meta.model.setItemFromDefault()
                     } else {
-                        await value.meta.model.loadItem(toId)
+                        await value.meta.model.loadItem(toPk)
                     }
                 }
             }
