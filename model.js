@@ -21,8 +21,15 @@ module.exports = function () {
         },
         texts: {
             list: null,
+            item: null,
             description: null,
-            item: null
+        },
+        loadings: {
+            list: false,
+            item: false,
+            save: false,
+            destroy: false,
+            action: false
         },
         pk: 'id'
     }
@@ -172,6 +179,7 @@ module.exports = function () {
 
     self._loadList = (params = {}, settings = {}) => {
         return new Promise((resolve, reject) => {
+            self.loadings.list = true
             if (settings.setFirstPage !== false)
                 self.setPagination({page: 1})
             let defaultParams = {
@@ -190,17 +198,26 @@ module.exports = function () {
                     resolve(results)
                 } else
                     resolve(response.data)
-            }).catch(error => reject(error.response))
+                self.loadings.list = false
+            }).catch(error => {
+                reject(error.response)
+                self.loadings.list = false
+            })
         })
     }
 
     self._create = (data = null) => {
         return new Promise((resolve, reject) => {
+            self.loadings.save = true
             window.axios.post(`/${self.url}/`, data || self.item)
                 .then(response => {
                     self.item = response.data
                     resolve(self.item)
-                }).catch(error => reject(error.response))
+                    self.loadings.save = false
+                }).catch(error => {
+                reject(error.response)
+                self.loadings.save = false
+            })
         })
     }
 
@@ -209,11 +226,16 @@ module.exports = function () {
             data = data || self.item
             if (!data[self.pk])
                 reject()
+            self.loadings.save = true
             window.axios.put(`/${self.url}/${data[self.pk]}/`, data)
                 .then(response => {
                     self.item = response.data
                     resolve(response.data)
-                }).catch(error => reject(error.response))
+                    self.loadings.save = false
+                }).catch(error => {
+                reject(error.response)
+                self.loadings.save = false
+            })
         })
     }
 
@@ -237,11 +259,16 @@ module.exports = function () {
                 pk = self.item[self.pk]
             if (!pk)
                 reject()
+            self.loadings.destroy = true
             window.axios.delete(`/${self.url}/${pk}/`)
                 .then(() => {
                     resolve()
+                    self.loadings.destroy = false
                 })
-                .catch(error => reject(error.response))
+                .catch(error => {
+                    reject(error.response)
+                    self.loadings.destroy = false
+                })
         })
     }
 
@@ -253,6 +280,7 @@ module.exports = function () {
             currentUrl += `${action}/`
 
         return new Promise((resolve, reject) => {
+            self.loadings.action = true
             window.axios({
                 method: method,
                 url: currentUrl,
@@ -262,9 +290,11 @@ module.exports = function () {
             })
                 .then((response) => {
                     resolve(response.data)
+                    self.loadings.action = false
                 })
                 .catch((error) => {
                     reject(error.response)
+                    self.loadings.action = false
                 })
         })
     }

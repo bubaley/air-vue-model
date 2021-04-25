@@ -10,8 +10,8 @@ m.updateLocale('ru', {
     },
 })
 
-m.calendarDateTime = date => moment.utc(date, 'YYYY-MM-DD HH:mm:ss').local().calendar()
-m.calendarDate = date => moment.utc(date, 'YYYY-MM-DD HH:mm:ss').local().calendar().split(',')[0].replace(` ${moment().year()} г.`, '')
+m.calendarDateTime = date => date ? moment.utc(date, 'YYYY-MM-DD HH:mm:ss').local().calendar() : null
+m.calendarDate = date => date ? moment.utc(date, 'YYYY-MM-DD HH:mm:ss').local().calendar().split(',')[0].replace(` ${moment().year()} г.`, '') : null
 m.initDates = (days = 7, end_date = null) => {
     end_date = end_date || moment()
     const start_date = end_date.clone().subtract(days, 'days')
@@ -26,8 +26,6 @@ m.formatFromSeconds = seconds => {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
 }
 
-m.formatToUTC = date => {
-    return moment(date).utc().format('YYYY-MM-DD HH:mm:ss')
-}
+m.formatToUTC = date => date ? moment(date).utc().format('YYYY-MM-DD HH:mm:ss') : null
 
 module.exports = m
