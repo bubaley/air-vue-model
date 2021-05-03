@@ -1,6 +1,6 @@
 const m = {
     settings: {
-        convertToBase64: false
+        convertToBase64: true
     },
     func: null
 }
