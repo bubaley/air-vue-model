@@ -123,9 +123,9 @@ module.exports = function () {
 
             meta.model = model || parentModel || self
             if (typeof path !== 'string')
-                path = model.url
+                path = meta.model.url
             if (single) {
-                meta.param = `${model.name}${model.pk.charAt(0).toUpperCase() + model.pk.slice(1)}`
+                meta.param = `${meta.model.name}${meta.model.pk.charAt(0).toUpperCase() + meta.model.pk.slice(1)}`
                 meta.single = true
                 path += `/:${meta.param}`
             }
