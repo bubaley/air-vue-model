@@ -42,16 +42,16 @@ module.exports = function () {
         return self._loadItem(pk, settings)
     }
 
-    self.create = (data = null) => {
-        return self._create(data)
+    self.create = (data = null, settings = {}) => {
+        return self._create(data, settings)
     }
 
-    self.update = (data = null) => {
-        return self._update(data)
+    self.update = (data = null, settings = {}) => {
+        return self._update(data, settings)
     }
 
-    self.updateOrCreate = (data = null) => {
-        return self._updateOrCreate(data)
+    self.updateOrCreate = (data = null, settings = {}) => {
+        return self._updateOrCreate(data, settings)
     }
 
     self.destroy = (id = null) => {
@@ -116,17 +116,16 @@ module.exports = function () {
         self.deleteBy(self.pk, pk, list)
     }
 
-    const _getRoutes = (routes) => {
+    self._getRoutes = (routes, parentModel = null) => {
         const newRoutes = []
         routes.forEach(route => {
             let {component, path, name, model, redirect, children, single, ...meta} = route
 
-            model = model || self
-            meta.model = model
+            meta.model = model || parentModel || self
             if (typeof path !== 'string')
                 path = model.url
             if (single) {
-                meta.param = `${model.name}${self.pk.charAt(0).toUpperCase() + self.pk.slice(1)}`
+                meta.param = `${model.name}${model.pk.charAt(0).toUpperCase() + model.pk.slice(1)}`
                 meta.single = true
                 path += `/:${meta.param}`
             }
@@ -141,14 +140,14 @@ module.exports = function () {
             if (redirect)
                 newRoute.redirect = redirect
             if (Array.isArray(children))
-                newRoute.children = _getRoutes(children)
+                newRoute.children = self._getRoutes(children, meta.model)
 
             newRoutes.push(newRoute)
         })
         return newRoutes
     }
 
-    self.getRoutes = () => _getRoutes(self.routes)
+    self.getRoutes = () => self._getRoutes(self.routes)
 
     self._loadItem = (pk, settings = {}) => {
         return new Promise((resolve, reject) => {
@@ -206,30 +205,13 @@ module.exports = function () {
         })
     }
 
-    self._create = (data = null) => {
+    self._create = (data = null, settings = {}) => {
         return new Promise((resolve, reject) => {
             self.loadings.save = true
             window.axios.post(`/${self.url}/`, data || self.item)
                 .then(response => {
-                    self.item = response.data
-                    resolve(self.item)
-                    self.loadings.save = false
-                }).catch(error => {
-                reject(error.response)
-                self.loadings.save = false
-            })
-        })
-    }
-
-    self._update = (data = null) => {
-        return new Promise((resolve, reject) => {
-            data = data || self.item
-            if (!data[self.pk])
-                reject()
-            self.loadings.save = true
-            window.axios.put(`/${self.url}/${data[self.pk]}/`, data)
-                .then(response => {
-                    self.item = response.data
+                    if (settings.setToModel !== false)
+                        self.item = response.data
                     resolve(response.data)
                     self.loadings.save = false
                 }).catch(error => {
@@ -239,16 +221,35 @@ module.exports = function () {
         })
     }
 
-    self._updateOrCreate = (data = null) => {
+    self._update = (data = null, settings = {}) => {
+        return new Promise((resolve, reject) => {
+            data = data || self.item
+            if (!data[self.pk])
+                reject()
+            self.loadings.save = true
+            window.axios.put(`/${self.url}/${data[self.pk]}/`, data)
+                .then(response => {
+                    if (settings.setToModel !== false)
+                        self.item = response.data
+                    resolve(response.data)
+                    self.loadings.save = false
+                }).catch(error => {
+                reject(error.response)
+                self.loadings.save = false
+            })
+        })
+    }
+
+    self._updateOrCreate = (data = null, settings = {}) => {
         data = data || self.item
         if (data.id)
             return {
-                promise: self.update(data),
+                promise: self.update(data, settings),
                 created: false
             }
         else
             return {
-                promise: self.create(data),
+                promise: self.create(data, settings),
                 created: true
             }
     }
