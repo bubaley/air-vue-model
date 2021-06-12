@@ -261,7 +261,9 @@ module.exports = function () {
             if (!pk)
                 reject()
             self.loadings.destroy = true
-            window.axios.delete(`/${self.url}/${pk}/`, data)
+            window.axios.delete(`/${self.url}/${pk}/`, {
+                data
+            })
                 .then(() => {
                     resolve()
                     self.loadings.destroy = false
