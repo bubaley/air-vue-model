@@ -54,8 +54,8 @@ module.exports = function () {
         return self._updateOrCreate(data, settings)
     }
 
-    self.destroy = (id = null) => {
-        return self._destroy(id)
+    self.destroy = (id = null, data = {}) => {
+        return self._destroy(id, data)
     }
 
     self.send = (action, pk = null, data = {}, method = 'post', headers = {}) => {
@@ -254,14 +254,14 @@ module.exports = function () {
             }
     }
 
-    self._destroy = (pk = null) => {
+    self._destroy = (pk = null, data = {}) => {
         return new Promise((resolve, reject) => {
             if (!pk && self.item && self.item[self.pk])
                 pk = self.item[self.pk]
             if (!pk)
                 reject()
             self.loadings.destroy = true
-            window.axios.delete(`/${self.url}/${pk}/`)
+            window.axios.delete(`/${self.url}/${pk}/`, data)
                 .then(() => {
                     resolve()
                     self.loadings.destroy = false
