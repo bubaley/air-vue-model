@@ -125,7 +125,7 @@ module.exports = function () {
             if (typeof path !== 'string')
                 path = meta.model.url
             if (single) {
-                meta.param = `${meta.model.name}${meta.model.pk.charAt(0).toUpperCase() + meta.model.pk.slice(1)}`
+                meta.param = self.routeParam
                 meta.single = true
                 path += `/:${meta.param}`
             }
@@ -242,7 +242,7 @@ module.exports = function () {
 
     self._updateOrCreate = (data = null, settings = {}) => {
         data = data || self.item
-        if (data.id)
+        if (data[self.pk])
             return {
                 promise: self.update(data, settings),
                 created: false
@@ -322,6 +322,11 @@ module.exports = function () {
             self.loadList({}, {
                 setFirstPage: false
             })
+        }
+    })
+    Object.defineProperties(self, {
+        routeParam: {
+            get: () => `${self.name}${self.pk.charAt(0).toUpperCase() + self.pk.slice(1)}`
         }
     })
 
