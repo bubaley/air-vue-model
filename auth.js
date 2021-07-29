@@ -67,7 +67,7 @@ self.loadUser = async () => {
         self.user = (await axios.get(self.urls.me)).data
         return self.user
     } catch (e) {
-        throw e
+        throw e.response
     }
 }
 
@@ -85,7 +85,7 @@ self.login = async data => {
             tokens: {access, refresh}
         }
     } catch (e) {
-        throw e
+        throw e.response
     }
 }
 
@@ -95,7 +95,7 @@ self.register = async data => {
         await axios.post(self.urls.register, data)
         return await self.login(data)
     } catch (e) {
-        throw e
+        throw e.response
     }
 }
 
@@ -110,7 +110,7 @@ self.refresh = async token => {
         self.setAuthorizationHeader(tokens.access)
         return tokens
     } catch (e) {
-        throw e
+        throw e.response
     }
 }
 
