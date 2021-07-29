@@ -186,4 +186,13 @@ self.parseJwt = token => {
     return JSON.parse(jsonPayload)
 }
 
+self.refreshInterval = setInterval(async () => {
+    let checkDate = Date.now() / 1000 | 0
+    checkDate += 60 * 60
+    const tokens = self.getTokensFromStorage()
+    if (self.tokenIsValid(tokens.refresh) && !self.tokenIsValid(tokens.refresh, checkDate)) {
+        await self.refresh(tokens.refresh)
+    }
+}, 1000 * 60 * 10)
+
 module.exports = self
