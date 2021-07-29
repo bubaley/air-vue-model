@@ -46,138 +46,79 @@ self.isSuperuser = (user = null) => {
     return user && user.is_superuser
 }
 
-self.me = async () => {
-    return new Promise(async (resolve, reject) => {
-        // Get tokens from local storage
-        let {access, refresh} = self.getTokens()
-        if (access) {
-            // set auth header to axios
-            self.setAuthorizationHeader(access)
-            try {
-                // try auth with current access
-                await self.loadUser()
-                resolve()
-                return
-            } catch {
-                // clear access token
-                access = null
-            }
+self.me = async (needRefresh = true) => {
+    let tokens = self.getTokensFromStorage()
+    if (self.tokenIsValid(tokens.refresh) && needRefresh) {
+        try {
+            tokens = await self.refresh(tokens.refresh)
+        } catch (e) {
         }
-        // update tokens with current refresh
-        if (!access && refresh) {
-            try {
-                let tokens = await self.refresh()
-                access = tokens.access
-            } catch {
-                reject()
-                return
-            }
-        }
-        // clear tokens and user
-        if (!access && !refresh) {
-            self.logout().then(() => {
-                reject()
-            })
-            return
-        }
-        // try load user with new access after refresh tokens
-        if (access) {
-            try {
-                await self.loadUser()
-                resolve()
-            } catch {
-                reject()
-            }
-        }
-    })
+    }
+    if (self.tokenIsValid(tokens.access)) {
+        self.setAuthorizationHeader(tokens.access)
+        return await self.loadUser()
+    }
+    self.logout()
+    throw {'message': 'authorization fail'}
 }
 
-self.loadUser = () => {
-    return new Promise((resolve, reject) => {
-        axios.get(self.urls.me)
-            .then(response => {
-                self.user = response.data
-                resolve(self.user)
-            }).catch(() => {
-            // remove auth token from local storage and axios
-            self.removeToken(self.authorization.access)
-            self.deleteAuthorizationHeader()
-            reject()
-        })
-    })
+self.loadUser = async () => {
+    try {
+        self.user = (await axios.get(self.urls.me)).data
+        return self.user
+    } catch (e) {
+        throw e
+    }
 }
 
-self.login = async (data) => {
-    await self.logout()
-    return new Promise((resolve, reject) => {
-        axios.post(self.urls.login, data).then(response => {
-            const access = response.data[self.authorization.access]
-            const refresh = response.data[self.authorization.refresh]
-            self.setTokens(access, refresh)
-            self.me().then(() => {
-                resolve()
-            }).catch(() => {
-                reject()
-            })
-        }).catch(error => {
-            reject(error.response)
-        })
-    })
-}
-
-self.register = async (data) => {
-    await self.logout()
-    return new Promise((resolve, reject) => {
-        axios.post(self.urls.register, data).then(response => {
-            self.user = response.data
-            self.login(data).then(tokens => {
-                resolve({
-                    user: response.data,
-                    tokens: tokens
-                })
-            })
-        }).catch(error => {
-            reject(error.response)
-        })
-    })
-}
-
-self.refresh = async () => {
-    return new Promise((resolve, reject) => {
-        const refresh = self.getTokens().refresh
-        if (refresh) {
-            axios.post(self.urls.refresh, {
-                refresh
-            }).then(response => {
-                const access = response.data[self.authorization.access]
-                const refresh = response.data[self.authorization.refresh]
-                self.setTokens(access, refresh)
-                self.setAuthorizationHeader(access)
-                resolve({
-                    access, refresh
-                })
-            }).catch(error => {
-                self.logout().then(() => {
-                    reject(error.response)
-                })
-            })
-        } else {
-            self.logout().then(() => {
-                reject()
-            })
+self.login = async data => {
+    self.logout()
+    try {
+        const tokens = (await axios.post(self.urls.login, data)).data
+        const access = tokens[self.authorization.access]
+        const refresh = tokens[self.authorization.refresh]
+        self.setTokensToStorage(access, refresh)
+        self.setAuthorizationHeader(access)
+        const result = await self.loadUser()
+        return {
+            user: result,
+            tokens: {access, refresh}
         }
-    })
+    } catch (e) {
+        throw e
+    }
 }
 
+self.register = async data => {
+    self.logout()
+    try {
+        await axios.post(self.urls.register, data)
+        return await self.login(data)
+    } catch (e) {
+        throw e
+    }
+}
 
-self.logout = async () => {
-    return new Promise((resolve, reject) => {
-        axios.defaults.headers.common = {Authorization: null}
-        localStorage.removeItem(self.authorization.access)
-        localStorage.removeItem(self.authorization.refresh)
-        self.user = null
-        resolve()
-    })
+self.refresh = async token => {
+    try {
+        const result = (await axios.post(self.urls.refresh, {refresh: token})).data
+        const tokens = {
+            access: result[self.authorization.access],
+            refresh: result[self.authorization.refresh]
+        }
+        self.setTokensToStorage(tokens.access, tokens.refresh)
+        self.setAuthorizationHeader(tokens.access)
+        return tokens
+    } catch (e) {
+        throw e
+    }
+}
+
+self.logout = () => {
+    axios.defaults.headers.common['Authorization'] = null
+    localStorage.removeItem(self.authorization.access)
+    localStorage.removeItem(self.authorization.refresh)
+    self.user = null
 }
 
 self.removeToken = (token) => {
@@ -185,14 +126,14 @@ self.removeToken = (token) => {
         localStorage.removeItem(token)
 }
 
-self.setTokens = (access = null, refresh = null) => {
+self.setTokensToStorage = (access = null, refresh = null) => {
     if (access)
         localStorage.setItem(self.authorization.access, access)
     if (refresh)
         localStorage.setItem(self.authorization.refresh, refresh)
 }
 
-self.getTokens = () => {
+self.getTokensFromStorage = () => {
     let access = localStorage.getItem(self.authorization.access)
     if (access === 'undefined') {
         self.removeToken(self.authorization.access)
@@ -208,11 +149,7 @@ self.getTokens = () => {
     }
 }
 
-self.getAuthorizationHeader = (access = null) => {
-    if (!access)
-        access = self.getTokens().access
-    if (!access)
-        return {}
+self.getAuthorizationHeader = (access) => {
     const authorization = {}
     let tokenView = ''
     if (self.authorization.authorizationType)
@@ -222,12 +159,31 @@ self.getAuthorizationHeader = (access = null) => {
     return authorization
 }
 
-self.setAuthorizationHeader = (access = null) => {
+self.setAuthorizationHeader = (access) => {
     Object.assign(axios.defaults.headers.common, self.getAuthorizationHeader(access))
 }
 
 self.deleteAuthorizationHeader = () => {
     delete axios.defaults.headers.common[self.authorization.authorizationKey]
+}
+
+self.tokenIsValid = token => {
+    const currentDate = Date.now() / 1000 | 0
+    try {
+        const data = self.parseJwt(token)
+        return currentDate < data.exp
+    } catch (e) {
+        return false
+    }
+}
+
+self.parseJwt = token => {
+    let base64Url = token.split('.')[1]
+    let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    let jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+    }).join(''))
+    return JSON.parse(jsonPayload)
 }
 
 module.exports = self

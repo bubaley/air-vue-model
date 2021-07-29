@@ -55,7 +55,10 @@ module.exports = function () {
     }
 
     self.destroy = (id = null, data = {}) => {
-        return self._destroy(id, data)
+        return self._delete(id, data)
+    }
+    self.delete = (id = null, data = {}) => {
+        return self._delete(id, data)
     }
 
     self.send = (action, pk = null, data = {}, method = 'post', headers = {}) => {
@@ -68,6 +71,10 @@ module.exports = function () {
 
     self.sendPostSingle = (action, pk, data, headers) => self.send(action, pk, data, 'post', headers)
     self.sendPost = (action, data, headers) => self.send(action, null, data, 'post', headers)
+    self.sendPutSingle = (action, pk, data, headers) => self.send(action, pk, data, 'put', headers)
+    self.sendPut = (action, data, headers) => self.send(action, null, data, 'put', headers)
+    self.sendDeleteSingle = (action, pk, data, headers) => self.send(action, pk, data, 'delete', headers)
+    self.sendDelete = (action, data, headers) => self.send(action, null, data, 'delete', headers)
     self.sendGetSingle = (action, pk, params, headers) => self.send(action, pk, params, 'get', headers)
     self.sendGet = (action, params, headers) => self.send(action, null, params, 'get', headers)
 
@@ -254,7 +261,7 @@ module.exports = function () {
             }
     }
 
-    self._destroy = (pk = null, data = {}) => {
+    self._delete = (pk = null, data = {}) => {
         return new Promise((resolve, reject) => {
             if (!pk && self.item && self.item[self.pk])
                 pk = self.item[self.pk]
