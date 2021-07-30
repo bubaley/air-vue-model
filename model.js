@@ -132,7 +132,7 @@ module.exports = function () {
             if (typeof path !== 'string')
                 path = meta.model.url
             if (single) {
-                meta.param = self.routeParam
+                meta.param = meta.model.routeParam
                 meta.single = true
                 path += `/:${meta.param}`
             }
