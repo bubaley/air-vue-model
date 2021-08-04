@@ -79,10 +79,10 @@ module.exports = function () {
     self.sendGet = (action, params, headers) => self.send(action, null, params, 'get', headers)
 
     self.setPagination = pagination => {
-        self.pagination._page = pagination.page || self.pagination._page
-        self.pagination._page_size = pagination.page_size || self.pagination._page_size
-        self.pagination.total = pagination.total || self.pagination.total
-        self.pagination.last_page = pagination.last_page || self.pagination.last_page
+        self.pagination._page = pagination.page === undefined ? self.pagination._page : pagination.page
+        self.pagination._page_size = pagination.page_size === undefined ? self.pagination._page_size : pagination.page_size
+        self.pagination.total = pagination.total === undefined ? self.pagination.total : pagination.total
+        self.pagination.last_page = pagination.last_page === undefined ? self.pagination.last_page : pagination.last_page
     }
 
     self.copy = item => {
