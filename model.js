@@ -71,7 +71,7 @@ module.exports = function () {
 
     self.sendPostSingle = (action, pk, data, headers) => self.send(action, pk, data, 'post', headers)
     self.sendPost = (action, data, headers) => self.send(action, null, data, 'post', headers)
-    self.sendPutSingle = (action, pk, data, headers) => self.sebnd(action, pk, data, 'put', headers)
+    self.sendPutSingle = (action, pk, data, headers) => self.send(action, pk, data, 'put', headers)
     self.sendPut = (action, data, headers) => self.send(action, null, data, 'put', headers)
     self.sendDeleteSingle = (action, pk, data, headers) => self.send(action, pk, data, 'delete', headers)
     self.sendDelete = (action, data, headers) => self.send(action, null, data, 'delete', headers)
@@ -294,7 +294,7 @@ module.exports = function () {
             window.axios({
                 method: method,
                 url: currentUrl,
-                data: ['post', 'get', 'delete'].indexOf(method) > -1 ? data : null,
+                data: ['post', 'put', 'delete'].indexOf(method) > -1 ? data : null,
                 params: method === 'get' ? data : null,
                 headers: headers
             })
